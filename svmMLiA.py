@@ -12,6 +12,8 @@ digits = [0,1,2,3,4,5,6,7,8,9]
 TOLER = 0.0001
 C_VALUE = 10
 
+svInd = 0
+
 SPLITS = [[0, 1],
           [0, 2],
           [0, 3],
@@ -340,6 +342,16 @@ def load_mnist(dataset, digitA, digitB):
 
     return normalize_mnist(np.array(new_images)), new_labels
 
+def load_mnist_all(dataset):
+    images, labels = mnist.read(digits, dataset=dataset,
+                                path="./mnist/")
+    #turn cpxopt into numpy 2d array and a list
+    images = np.array(images)
+    labels = list(labels)
+
+    return normalize_mnist(images), labels
+
+
 def normalize_mnist(m):
   #return m/255.0
   return (m/255.0 - .5) *2
@@ -384,6 +396,24 @@ def testDigits(digitA, digitB, kTup=('lin', 10)):
     print "the test error rate is: %f" % (float(errorCount)/m)
 
     return b,alphas
+
+def predict(i, dataArr, labelArr, labels, b, alphas, kTup=('lin', 10)):
+    datMat=np.mat(dataArr);
+    labelMat = np.mat(labelArr).transpose()
+    #svInd=np.nonzero(alphas.A>0)[0]
+    sVs=datMat[svInd]
+    labelSV = labelMat[svInd];
+
+    kernelEval = kernelTrans(sVs,datMat[i,:],kTup)
+    predict=kernelEval.T * np.multiply(labelSV,alphas[svInd]) + b
+    sign = np.sign(predict)
+
+    if sign == 1:
+      return labels[0]
+    if sign == -1:
+      return labels[1]
+    else:
+      return labels[choice(0, 1)]
 
 
 '''#######********************************
