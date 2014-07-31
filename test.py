@@ -70,14 +70,14 @@ def vote(i):
   votes = []
 
   for split in split_classifiers.keys():
-    b, alphas = split_classifiers[split]
-    v = svmMLiA.predict(i, dataArr, labelArr, split, b, alphas)
+    b, alphas, sVs, labelSV, svInd = split_classifiers[split]
+    v = svmMLiA.predict(i, dataArr, split, b, alphas, sVs, labelSV, svInd)
 
     #print(("single vote", split, v))
 
     votes.append(v)
 
-  print(("final votes", votes))
+  #print(("final votes", votes))
   return most_common(votes)
 
 def most_common(lst):
@@ -100,11 +100,10 @@ split_classifiers = {}
 for split in SPLITS:
   print(("SPLIT", split))
 
-  #svmMLiA.testDigits(split[0], split[1], ('rbf', 20))
-  b,alphas = svmMLiA.testDigits(split[0], split[1])
+  b,alphas,sVs,labelSV,svInd = svmMLiA.testDigits(split[0], split[1])
 
   split_tuple = (split[0], split[1])
-  split_classifiers[split_tuple] = (b,alphas)
+  split_classifiers[split_tuple] = (b,alphas,sVs,labelSV,svInd)
 
 print(split_classifiers.keys())
 
@@ -117,8 +116,8 @@ split_classifiers = pickle.load(open('classifiers.pickle'))
 
 dataArr,labelArr = svmMLiA.load_mnist_all('testing')
 
-dataArr = dataArr[:10]
-labelArr = labelArr[:10]
+dataArr = dataArr[:100]
+labelArr = labelArr[:100]
 
 
 
@@ -130,7 +129,7 @@ for i in range(len(labelArr)):
   v = vote(i)
   truth = labelArr[i]
 
-  print(('comparison', v, truth))
+  print('comparison: %d %d' % (v, truth))
 
   if v != truth:
     total_errors += 1

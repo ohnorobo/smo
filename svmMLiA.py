@@ -12,8 +12,6 @@ digits = [0,1,2,3,4,5,6,7,8,9]
 TOLER = 0.0001
 C_VALUE = 10
 
-svInd = 0
-
 SPLITS = [[0, 1],
           [0, 2],
           [0, 3],
@@ -266,6 +264,8 @@ def smoP(dataMatIn, classLabels, C, toler, maxIter,kTup=('lin', 0)):    #full Pl
 def calcWs(alphas,dataArr,classLabels):
     X = np.mat(dataArr); labelMat = np.mat(classLabels).transpose()
     m,n = np.shape(X)
+    print((m,n))
+    print((alphas.shape, X.shape, labelMat.shape))
     w = np.zeros((n,1))
     for i in range(m):
         w += np.multiply(alphas[i]*labelMat[i],X[i,:].T)
@@ -395,14 +395,17 @@ def testDigits(digitA, digitB, kTup=('lin', 10)):
         if np.sign(predict)!=np.sign(labelArr[i]): errorCount += 1
     print "the test error rate is: %f" % (float(errorCount)/m)
 
-    return b,alphas
+    #return b,alphas, calcWs(alphas[svInd], sVs, labelSV)
+    return b,alphas,sVs,labelSV,svInd
 
-def predict(i, dataArr, labelArr, labels, b, alphas, kTup=('lin', 10)):
+def predict(i, dataArr, labels, b, alphas, sVs, labelSV, svInd, kTup=('lin', 10)):
     datMat=np.mat(dataArr);
-    labelMat = np.mat(labelArr).transpose()
+    #labelMat = np.mat(labelArr).transpose()
     #svInd=np.nonzero(alphas.A>0)[0]
-    sVs=datMat[svInd]
-    labelSV = labelMat[svInd];
+    #sVs=datMat[svInd]
+    #labelSV = labelMat[svInd];
+
+    #print(("shapes", alphas.shape, datMat[i,:].shape))
 
     kernelEval = kernelTrans(sVs,datMat[i,:],kTup)
     predict=kernelEval.T * np.multiply(labelSV,alphas[svInd]) + b
