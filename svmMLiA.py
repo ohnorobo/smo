@@ -12,53 +12,6 @@ digits = [0,1,2,3,4,5,6,7,8,9]
 TOLER = 0.0001
 C_VALUE = 10
 
-SPLITS = [[0, 1],
-          [0, 2],
-          [0, 3],
-          [0, 4],
-          [0, 5],
-          [0, 6],
-          [0, 7],
-          [0, 8],
-          [0, 9],
-          [1, 2],
-          [1, 3],
-          [1, 4],
-          [1, 5],
-          [1, 6],
-          [1, 7],
-          [1, 8],
-          [1, 9],
-          [2, 3],
-          [2, 4],
-          [2, 5],
-          [2, 6],
-          [2, 7],
-          [2, 8],
-          [2, 9],
-          [3, 4],
-          [3, 5],
-          [3, 6],
-          [3, 7],
-          [3, 8],
-          [3, 9],
-          [4, 5],
-          [4, 6],
-          [4, 7],
-          [4, 8],
-          [4, 9],
-          [5, 6],
-          [5, 7],
-          [5, 8],
-          [5, 9],
-          [6, 7],
-          [6, 8],
-          [6, 9],
-          [7, 8],
-          [7, 9],
-          [8, 9]]
-
-
 #############Memoization
 #http://stackoverflow.com/questions/1988804/what-is-memoization-and-how-can-i-use-it-in-python
 class Memoize:
@@ -94,6 +47,7 @@ def clipAlpha(aj,H,L):
         aj = L
     return aj
 
+'''
 def smoSimple(dataMatIn, classLabels, C, toler, maxIter):
     dataMatrix = np.mat(dataMatIn); labelMat = np.mat(classLabels).transpose()
     b = 0; m,n = np.shape(dataMatrix)
@@ -143,6 +97,7 @@ def smoSimple(dataMatIn, classLabels, C, toler, maxIter):
         else: iter = 0
         print "iteration number: %d, changed: %d" % (iter, alphaPairsChanged)
     return b,alphas
+'''
 
 def kernelTrans(X, A, kTup): #calc the kernel or transform data to a higher dimensional space
     m,n = np.shape(X)
@@ -261,6 +216,8 @@ def smoP(dataMatIn, classLabels, C, toler, maxIter,kTup=('lin', 0)):    #full Pl
         print "iteration number: %d, changed: %d" % (iter, alphaPairsChanged)
     return oS.b,oS.alphas
 
+
+'''
 def calcWs(alphas,dataArr,classLabels):
     X = np.mat(dataArr); labelMat = np.mat(classLabels).transpose()
     m,n = np.shape(X)
@@ -295,7 +252,10 @@ def testRbf(k1=1.3):
         predict=kernelEval.T * np.multiply(labelSV,alphas[svInd]) + b
         if np.sign(predict)!=np.sign(labelArr[i]): errorCount += 1
     print "the test error rate is: %f" % (float(errorCount)/m)
+'''
 
+
+'''
 def img2vector(filename):
     returnVect = np.zeros((1,1024))
     fr = open(filename)
@@ -319,8 +279,11 @@ def loadImages(dirName):
         else: hwLabels.append(1)
         trainingMat[i,:] = img2vector('%s/%s' % (dirName, fileNameStr))
     return trainingMat, hwLabels
+'''
 
 def load_mnist(dataset, digitA, digitB):
+    #use only the data points with labels A or B
+
     images, labels = mnist.read(digits, dataset=dataset,
                                 path="./mnist/")
     #turn cpxopt into numpy 2d array and a list
@@ -343,6 +306,8 @@ def load_mnist(dataset, digitA, digitB):
     return normalize_mnist(np.array(new_images)), new_labels
 
 def load_mnist_all(dataset):
+    #load all the data
+
     images, labels = mnist.read(digits, dataset=dataset,
                                 path="./mnist/")
     #turn cpxopt into numpy 2d array and a list
@@ -353,21 +318,15 @@ def load_mnist_all(dataset):
 
 
 def normalize_mnist(m):
-  #return m/255.0
+  # normalize from -1 to 1
   return (m/255.0 - .5) *2
 
 def testDigits(digitA, digitB, kTup=('lin', 10)):
     dataArr,labelArr = load_mnist('training', digitA, digitB)
-    #dataArr,labelArr = loadImages('trainingDigits')
 
+    #training on only 1000 data points
     dataArr = dataArr[:1000]
     labelArr = labelArr[:1000]
-
-    #print((type(dataArr), np.shape(dataArr)))
-    #print(type(labelArr), len(labelArr))
-
-    #print(dataArr[:5,:5])
-    #print(labelArr[:5])
 
     b,alphas = smoP(dataArr, labelArr, C_VALUE, TOLER, 10000, kTup)
     datMat=np.mat(dataArr); labelMat = np.mat(labelArr).transpose()
@@ -384,7 +343,6 @@ def testDigits(digitA, digitB, kTup=('lin', 10)):
     print "the training error rate is: %f" % (float(errorCount)/m)
 
     dataArr,labelArr = load_mnist('testing', digitA, digitB)
-    #dataArr,labelArr = loadImages('testDigits')
 
     errorCount = 0
     datMat=np.mat(dataArr); labelMat = np.mat(labelArr).transpose()
@@ -395,17 +353,10 @@ def testDigits(digitA, digitB, kTup=('lin', 10)):
         if np.sign(predict)!=np.sign(labelArr[i]): errorCount += 1
     print "the test error rate is: %f" % (float(errorCount)/m)
 
-    #return b,alphas, calcWs(alphas[svInd], sVs, labelSV)
     return b,alphas,sVs,labelSV,svInd
 
 def predict(i, dataArr, labels, b, alphas, sVs, labelSV, svInd, kTup=('lin', 10)):
     datMat=np.mat(dataArr);
-    #labelMat = np.mat(labelArr).transpose()
-    #svInd=np.nonzero(alphas.A>0)[0]
-    #sVs=datMat[svInd]
-    #labelSV = labelMat[svInd];
-
-    #print(("shapes", alphas.shape, datMat[i,:].shape))
 
     kernelEval = kernelTrans(sVs,datMat[i,:],kTup)
     predict=kernelEval.T * np.multiply(labelSV,alphas[svInd]) + b
@@ -419,9 +370,10 @@ def predict(i, dataArr, labels, b, alphas, sVs, labelSV, svInd, kTup=('lin', 10)
       return labels[choice(0, 1)]
 
 
-'''#######********************************
+'''
+#######********************************
 Non-Kernel VErsions below
-'''#######********************************
+#######********************************
 
 class optStructK:
     def __init__(self,dataMatIn, classLabels, C, toler):
@@ -521,3 +473,4 @@ def smoPK(dataMatIn, classLabels, C, toler, maxIter):    #full Platt SMO
         elif (alphaPairsChanged == 0): entireSet = True
         print "iteration number: %d, changed: %d" % (iter, alphaPairsChanged)
     return oS.b,oS.alphas
+'''

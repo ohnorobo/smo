@@ -4,6 +4,11 @@ import svmMLiA
 from numpy import *
 import pickle
 
+# This code is split into two pieces
+# The first creates 45 classifiers and pickles them
+# the second un-pickles them and uses them to classify some testing data
+
+
 SPLITS = [[0, 1],
           [0, 2],
           [0, 3],
@@ -59,9 +64,6 @@ SPLITS = [[0, 1],
           [7, 9],
           [8, 9]]
 
-'''
-SPLITS = [[0,1], [0,2]]
-'''
 
 
 def vote(i):
@@ -73,11 +75,8 @@ def vote(i):
     b, alphas, sVs, labelSV, svInd = split_classifiers[split]
     v = svmMLiA.predict(i, dataArr, split, b, alphas, sVs, labelSV, svInd)
 
-    #print(("single vote", split, v))
-
     votes.append(v)
 
-  #print(("final votes", votes))
   return most_common(votes)
 
 def most_common(lst):
@@ -94,7 +93,7 @@ def most_common(lst):
 
 
 #Turn this on to create all 45 1-1 classifiers the first time
-'''
+#'''
 split_classifiers = {}
 
 for split in SPLITS:
@@ -108,10 +107,11 @@ for split in SPLITS:
 print(split_classifiers.keys())
 
 pickle.dump(split_classifiers, open("classifiers.pickle", 'w'))
-'''
+#'''
 
 
 #'''
+#Turn this on to use the 45 classifiers to vote on testing data
 split_classifiers = pickle.load(open('classifiers.pickle'))
 
 dataArr,labelArr = svmMLiA.load_mnist_all('testing')
@@ -119,13 +119,10 @@ dataArr,labelArr = svmMLiA.load_mnist_all('testing')
 dataArr = dataArr[:100]
 labelArr = labelArr[:100]
 
-
-
 total_guesses = 0.0
 total_errors = 0.0
 
 for i in range(len(labelArr)):
-  #print(("testing element", i))
   v = vote(i)
   truth = labelArr[i]
 
